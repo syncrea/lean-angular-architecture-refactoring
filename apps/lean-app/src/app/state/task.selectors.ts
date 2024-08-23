@@ -5,5 +5,5 @@ export const selectTaskState = createFeatureSelector<TaskState>('tasks');
 
 export const selectAllTasks = createSelector(
   selectTaskState,
-  (state: TaskState) => state.tasks
+  (state: TaskState) => Object.values(state.tasks)
 );
