@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { NxWelcomeComponent } from './nx-welcome.component';
+import { TaskListComponent } from './task-list.component';
 
 @Component({
-  standalone: true,
-  imports: [NxWelcomeComponent, RouterModule],
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  standalone: true,
+  imports: [TaskListComponent],
+  template: `<app-task-list></app-task-list>`,
+  styles: [`
+    :host { display: block; }
+  `]
 })
-export class AppComponent {
-  title = 'lean-app';
-}
+export class AppComponent {}
