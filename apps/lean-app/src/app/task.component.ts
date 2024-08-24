@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { Task } from './task.model';
+import { isTaskOverdue } from './task.helpers';
 
 @Component({
   selector: 'app-task',
@@ -29,12 +30,7 @@ import { Task } from './task.model';
 })
 export class TaskComponent {
   task = input.required<Task>();
-  overdue = computed(() => this.#isOverdue());
+  overdue = computed(() => isTaskOverdue(this.task(), new Date()));
 
   completeTask = output<{ task: Task }>();
-
-  #isOverdue() {
-    const task = this.task();
-    return task.dueDate && task.dueDate < new Date();
-  }
 }

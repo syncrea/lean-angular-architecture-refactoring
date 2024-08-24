@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TaskComponent } from './task.component';
 import { Task, TaskPriority } from './task.model';
+import { getImportantTasks } from './task.helpers';
 
 @Component({
   selector: 'app-task-list',
@@ -55,18 +56,9 @@ import { Task, TaskPriority } from './task.model';
 export class TaskListComponent {
   messages = input<string[]>([]);
   tasks = input<Task[]>([]);
-  importantTasks = computed(() => this.#getImportantTasks());
+  importantTasks = computed(() => getImportantTasks(this.tasks(), new Date()));
 
   addTask = output<{ title: string; priority: TaskPriority }>();
   completeTask = output<{ task: Task }>();
   deleteAllTasks = output<void>();
-
-  #getImportantTasks() {
-    const now = new Date();
-    return this.tasks().filter(
-      (task) =>
-        !task.completed &&
-        (task.priority === 'high' || (task.dueDate && task.dueDate < now))
-    );
-  }
 }
