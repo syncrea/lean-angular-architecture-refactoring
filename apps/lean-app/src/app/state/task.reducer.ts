@@ -1,10 +1,11 @@
 import { createReducer, on } from '@ngrx/store';
-import { addTask, completeTask, deleteTask } from './task.actions';
+import { addTask, completeTask, deleteTask, updateMessages } from './task.actions';
 import { Task } from '../task.model';
 import { generateRandomId } from '../helpers';
 
 export interface TaskState {
   readonly tasks: Record<string, Task>;
+  readonly messages: string[];
 }
 
 export const initialState: TaskState = {
@@ -12,7 +13,8 @@ export const initialState: TaskState = {
     '1': { id: '1', title: 'Learn Angular', priority: 'low', completed: false },
     '2': { id: '2', title: 'Learn Nx', priority: 'low', completed: false, dueDate: new Date('2022-01-01') },
     '3': { id: '3', title: 'Learn Ngrx', priority: 'high', completed: false }
-  }
+  },
+  messages: []
 };
 
 export const taskReducer = createReducer(
@@ -45,5 +47,11 @@ export const taskReducer = createReducer(
       ...state,
       tasks
     };
-  })
+  }),
+  on(updateMessages, (state, { messages }) => {
+    return {
+      ...state,
+      messages
+    };
+  }),
 );

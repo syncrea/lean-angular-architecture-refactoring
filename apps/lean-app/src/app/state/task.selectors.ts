@@ -7,3 +7,8 @@ export const selectAllTasks = createSelector(
   selectTaskState,
   (state: TaskState) => Object.values(state.tasks)
 );
+
+export const selectMessages = createSelector(
+  selectTaskState,
+  (state: TaskState) => state.messages
+);
