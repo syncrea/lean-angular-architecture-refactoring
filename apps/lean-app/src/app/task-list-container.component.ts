@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TaskListComponent } from './task-list.component';
 import { Store } from '@ngrx/store';
-import { TitleUpdateService } from './title-update-service.service';
 import { selectAllTasks, selectMessages } from './state/task.selectors';
 import { Task, TaskPriority } from './task.model';
 import { addTask, completeTask, purgeTasks } from './state/task.actions';
 import { getImportantTasks } from './task.helpers';
+import { activateTitleUpdate } from './title-update.helpers';
 
 @Component({
   selector: 'app-task-list-container',
@@ -24,7 +24,7 @@ import { getImportantTasks } from './task.helpers';
 })
 export class TaskListContainerComponent {
   #store = inject(Store);
-  #titleUpdateService = inject(TitleUpdateService);
+  titleUpdateSubscription = activateTitleUpdate();
 
   messages = this.#store.selectSignal(selectMessages);
   tasks = this.#store.selectSignal(selectAllTasks);
@@ -32,7 +32,6 @@ export class TaskListContainerComponent {
 
   addTask(title: string, priority: TaskPriority) {
     this.#store.dispatch(addTask({ title, priority }));
-    this.#titleUpdateService.updateTitle();
   }
 
   deleteAllTasks() {
@@ -41,6 +40,5 @@ export class TaskListContainerComponent {
 
   completeTask(task: Task) {
     this.#store.dispatch(completeTask({ taskId: task.id, completed: !task.completed }));
-    this.#titleUpdateService.updateTitle();
   }
 }
