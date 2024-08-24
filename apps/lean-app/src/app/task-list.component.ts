@@ -1,20 +1,23 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { selectAllTasks } from './state/task.selectors';
-import { addTask, deleteTask } from './state/task.actions';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import { TaskComponent } from './task.component';
-import { TaskPriority } from './task.model';
-import { TitleUpdateService } from './title-update-service.service';
+import { Task, TaskPriority } from './task.model';
 
 @Component({
   selector: 'app-task-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [TaskComponent],
   template: `
     <div>
       <h1>Task List</h1>
       <div>
-        <button (click)="deleteAllTasks()">Delete all Tasks</button>
+        <button (click)="deleteAllTasks.emit()">Delete all Tasks</button>
       </div>
       @for (message of messages(); track $index) {
         <div>{{ message }}</div>
@@ -26,18 +29,18 @@ import { TitleUpdateService } from './title-update-service.service';
         <option value="medium">Medium</option>
         <option value="high">High</option>
       </select>
-      <button (click)="addTask(taskTitle.value, $any(taskPriority.value))">
+      <button (click)="addTask.emit({title: taskTitle.value, priority: $any(taskPriority.value)})">
         Add Task
       </button>
       @if (importantTasks().length > 0) {
         <h2>Important Tasks</h2>
         @for ( task of importantTasks(); track task.id) {
-          <app-task [task]="task"></app-task>
+          <app-task [task]="task" (completeTask)="completeTask.emit($event)"></app-task>
         }
       }
       <h2>All Tasks</h2>
       @for ( task of tasks(); track task.id) {
-        <app-task [task]="task"></app-task>
+        <app-task [task]="task" (completeTask)="completeTask.emit($event)"></app-task>
       }
     </div>
   `,
@@ -50,17 +53,13 @@ import { TitleUpdateService } from './title-update-service.service';
   ],
 })
 export class TaskListComponent {
-  #store = inject(Store);
-  #titleUpdateService = inject(TitleUpdateService);
-
-  messages = signal<string[]>([]);
-  tasks = this.#store.selectSignal(selectAllTasks);
+  messages = input<string[]>([]);
+  tasks = input<Task[]>([]);
   importantTasks = computed(() => this.#getImportantTasks());
 
-  addTask(title: string, priority: TaskPriority) {
-    this.#store.dispatch(addTask({ title, priority }));
-    this.#titleUpdateService.updateTitle();
-  }
+  addTask = output<{ title: string; priority: TaskPriority }>();
+  completeTask = output<{ task: Task }>();
+  deleteAllTasks = output<void>();
 
   #getImportantTasks() {
     const now = new Date();
@@ -69,27 +68,5 @@ export class TaskListComponent {
         !task.completed &&
         (task.priority === 'high' || (task.dueDate && task.dueDate < now))
     );
-  }
-
-  deleteAllTasks() {
-    const now = new Date();
-    for (const task of this.tasks()) {
-      if (!task.completed && task.priority === 'high') {
-        this.messages.update((messages) => [...messages, `Cannot delete uncompleted high prio task "${task.title}".`]);
-        continue;
-      }
-
-      if (!task.completed && task.dueDate && task.dueDate < now) {
-        this.messages.update((messages) => [...messages, `Cannot delete overdue task "${task.title}".`]);
-        continue;
-      }
-
-      this.#store.dispatch(deleteTask({ taskId: task.id }));
-    }
-
-    if (this.tasks().length === 0) {
-      this.messages.set(['All tasks deleted.']);
-    }
-    this.#titleUpdateService.updateTitle();
   }
 }
